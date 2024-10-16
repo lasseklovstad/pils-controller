@@ -1,16 +1,13 @@
 #include "httpUtils.h"
 #include "timeUtils.h"
+#include <logging.h>
 
 const char *serverURL = "https://pils.gataersamla.no/api/controller";
 
-void addAuthenticationHeaders(HTTPClient &http, const char *apiSecret)
-{
-    // Generate a nonce (random number)
-    unsigned long nonce = random(1000000, 9999999);
-    unsigned long timestamp = getTimeStamp();
-    char data[50];                              // Buffer to hold the combined data
-    sprintf(data, "%lu:%lu", timestamp, nonce); // "timestamp:nonce" format
+#include <mbedtls/md.h>
 
+String generateHMAC(const char *apiSecret, const String &data)
+{
     // Compute HMAC-SHA256
     uint8_t hmacResult[32]; // Array to store the HMAC result (SHA-256 is 32 bytes)
 
@@ -27,8 +24,8 @@ void addAuthenticationHeaders(HTTPClient &http, const char *apiSecret)
     // Start the HMAC calculation with the secret key
     mbedtls_md_hmac_starts(&ctx, (const unsigned char *)apiSecret, strlen(apiSecret));
 
-    // Add the timestamp:nonce data to the HMAC
-    mbedtls_md_hmac_update(&ctx, (const unsigned char *)data, strlen(data));
+    // Add the combined "timestamp:nonce:requestBody" data to the HMAC
+    mbedtls_md_hmac_update(&ctx, (const unsigned char *)data.c_str(), data.length());
 
     // Finish the HMAC calculation and store the result in hmacResult
     mbedtls_md_hmac_finish(&ctx, hmacResult);
@@ -43,43 +40,42 @@ void addAuthenticationHeaders(HTTPClient &http, const char *apiSecret)
         sprintf(&hmacHex[i * 2], "%02x", hmacResult[i]);
     }
 
-    http.addHeader("HMAC", hmacHex);                // Add HMAC header
-    http.addHeader("Timestamp", String(timestamp)); // Add Timestamp header
-    http.addHeader("Nonce", String(nonce));         // Add Nonce header
+    return String(hmacHex); // Return the HMAC hex string
 }
 
 void postTemperature(float temperature, const int controllerId, const char *apiSecret)
 {
     if (WiFi.status() == WL_CONNECTED)
     {
-        Serial.println("POST temperature");
+        LOG_DEBUG("POST temperature");
         HTTPClient http; // Declare an HTTPClient object
 
         // Specify the server URL
         http.begin(serverURL + String("/") + String(controllerId));
+        
+        String body = String(temperature);
+        String nonce = String(random(1000000, 9999999));
+        String timestamp = String(getTimeStamp());
+        String data = timestamp + ":" + nonce;
+        String hmac = generateHMAC(apiSecret, data);
 
-        // Set request header
+        http.addHeader("HMAC", hmac);
+        http.addHeader("Timestamp", timestamp);
+        http.addHeader("Nonce", nonce);
         http.addHeader("Content-Type", "plain/text");
-        addAuthenticationHeaders(http, apiSecret);
-
-        // payload to send
-        String text = String(temperature);
 
         // Send the POST request
-        int httpResponseCode = http.POST(text);
+        int httpResponseCode = http.POST(body);
 
         // Print the response code
-        Serial.print("HTTP Response code: ");
-        Serial.println(httpResponseCode);
+        LOG_DEBUG("HTTP Response code: " + String(httpResponseCode));
 
         // If there is a response, print the response payload
         if (httpResponseCode != 200)
         {
             String response = http.getString();
-            Serial.print("Error on sending POST: ");
-            Serial.println(httpResponseCode);
-            Serial.println("Server response:");
-            Serial.println(response);
+            LOG_ERROR("Error on sending POST: " + String(httpResponseCode));
+            LOG_ERROR("Server response: " + String(response));
         }
 
         // End the HTTP connection
@@ -87,7 +83,7 @@ void postTemperature(float temperature, const int controllerId, const char *apiS
     }
     else
     {
-        Serial.println("Error: Not connected to Wi-Fi");
+        LOG_ERROR("Error: Not connected to Wi-Fi");
     }
 }
 
@@ -95,29 +91,32 @@ bool getControllerRelayOn(const int controllerId, const char *apiSecret)
 {
     if (WiFi.status() == WL_CONNECTED)
     {
-        Serial.println("Get controller relay on request");
+        LOG_DEBUG("Get controller relay on request");
         HTTPClient http; // Declare an HTTPClient object
 
         // Specify the server URL
         http.begin(serverURL + String("/") + String(controllerId));
 
-        // Set request header
-        addAuthenticationHeaders(http, apiSecret);
+        String nonce = String(random(1000000, 9999999));
+        String timestamp = String(getTimeStamp());
+        String data = timestamp + ":" + nonce;
+        String hmac = generateHMAC(apiSecret, data);
+
+        http.addHeader("HMAC", hmac);
+        http.addHeader("Timestamp", timestamp);
+        http.addHeader("Nonce", nonce);
 
         // Send the POST request
         int httpResponseCode = http.GET();
 
         // Print the response code
-        Serial.print("HTTP Response code: ");
-        Serial.println(httpResponseCode);
+        LOG_DEBUG("HTTP Response code: " + String(httpResponseCode));
         String response = http.getString();
         // If there is a response, print the response payload
         if (httpResponseCode != 200)
         {
-            Serial.print("Error on sending GET: ");
-            Serial.println(httpResponseCode);
-            Serial.println("Server response:");
-            Serial.println(response);
+            LOG_ERROR("Error on sending GET: " + String(httpResponseCode));
+            LOG_ERROR("Server response: " + String(response));
         }
 
         // End the HTTP connection
@@ -126,7 +125,7 @@ bool getControllerRelayOn(const int controllerId, const char *apiSecret)
     }
     else
     {
-        Serial.println("Error: Not connected to Wi-Fi");
+        LOG_ERROR("Not connected to Wi-Fi");
     }
     return false;
 }
