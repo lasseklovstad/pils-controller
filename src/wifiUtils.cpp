@@ -1,51 +1,62 @@
 
 #include "wifiUtils.h"
+#include <logging.h>
+
+
 
 void connectToWiFi(const char *ssid, const char *password)
 {
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
+  LOG_DEBUG("Connecting to " + String(ssid));
 
   WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED)
+  int attempts = 0;
+  while (WiFi.status() != WL_CONNECTED && attempts < 10)
   {
     delay(1000);
-    Serial.print(".");
+    LOG_DEBUG(".");
+    attempts++;
   }
 
-  Serial.println("");
-  Serial.println("Wi-Fi connected.");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  if (WiFi.status() == WL_CONNECTED) {
+    LOG_DEBUG("Wi-Fi connected.");
+    LOG_DEBUG("IP address: " + String(WiFi.localIP()));
+  } else {
+    LOG_ERROR("Failed to connect.");
+  }
 }
 
-void scanNetworks()
+void scanAndConnect(const char* ssidList[], const char* passwordList[], int numSavedNetworks)
 {
-  // Start the Wi-Fi module
+  // Start the Wi-Fi module in station mode
   WiFi.mode(WIFI_STA);
-  WiFi.disconnect(); // Disconnect from any existing connection
+  WiFi.disconnect();
   delay(100);
 
-  Serial.println("Scanning for Wi-Fi networks...");
+  LOG_DEBUG("Scanning for Wi-Fi networks...");
 
-  // Start the scan
-  int numNetworks = WiFi.scanNetworks();
+  // Scan for available networks
+  int foundNetworks = WiFi.scanNetworks();
 
-  Serial.println("Scan complete!");
+  LOG_DEBUG("Scan complete!");
+  LOG_DEBUG("Number of networks found: ");
+  LOG_DEBUG(foundNetworks);
 
-  // Print the number of networks found
-  Serial.print("Number of networks found: ");
-  Serial.println(numNetworks);
+  // Try to find and connect to one of your saved networks
+  for (int i = 0; i < foundNetworks; i++) {
+    String ssid = WiFi.SSID(i);
+    LOG_DEBUG("Found network: " + String(ssid));
 
-  // Loop through the found networks and print their SSIDs
-  for (int i = 0; i < numNetworks; i++)
-  {
-    Serial.print("SSID: ");
-    Serial.print(WiFi.SSID(i)); // Print the SSID
-    Serial.print(" | Signal strength: ");
-    Serial.print(WiFi.RSSI(i)); // Print the signal strength
-    Serial.println(" dBm");
-    delay(10); // Small delay for stability
+    for (int j = 0; j < numSavedNetworks; j++) {
+      if (ssid == ssidList[j]) {
+        LOG_DEBUG("Matching network found: " + String(ssidList[j]));
+        connectToWiFi(ssidList[j], passwordList[j]);
+        if (WiFi.status() == WL_CONNECTED) {
+          return;  // Exit if connected
+        }
+      }
+    }
   }
+
+  LOG_ERROR("No matching networks found or failed to connect.");
 }
