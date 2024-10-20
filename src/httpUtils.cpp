@@ -4,7 +4,42 @@
 
 const char *serverURL = "https://pils.gataersamla.no/api/controller";
 
-#include <mbedtls/md.h>
+WiFiClientSecure client;
+
+void setupHttps()
+{
+    if (!LittleFS.begin(true))
+    {
+        LOG_ERROR("An Error has occurred while mounting SPIFFS");
+        return;
+    }
+
+    // Open the certificate file in binary mode
+    File certFile = LittleFS.open("/isrgrootx1.pem", "r");
+    if (!certFile)
+    {
+        LOG_ERROR("Failed to open certificate file");
+        return;
+    }
+
+    // Read the certificate into a buffer
+    size_t certSize = certFile.size();
+
+    if (certSize == 0)
+    {
+        LOG_ERROR("Certificate file is empty");
+        certFile.close();
+        return;
+    }
+
+    // Load the certificate into the WiFiClientSecure
+    if (!client.loadCACert(certFile, certSize))
+    {
+        LOG_ERROR("Failed to load certificate");
+    }
+    LOG_DEBUG("Successfully loaded certificate");
+    certFile.close();
+}
 
 String generateHMAC(const char *apiSecret, const String &data)
 {
@@ -51,8 +86,8 @@ void postTemperature(float temperature, const int controllerId, const char *apiS
         HTTPClient http; // Declare an HTTPClient object
 
         // Specify the server URL
-        http.begin(serverURL + String("/") + String(controllerId));
-        
+        http.begin(client, serverURL + String("/") + String(controllerId));
+
         String body = String(temperature);
         String nonce = String(random(1000000, 9999999));
         String timestamp = String(getTimeStamp());
@@ -93,9 +128,8 @@ bool getControllerRelayOn(const int controllerId, const char *apiSecret)
     {
         LOG_DEBUG("Get controller relay on request");
         HTTPClient http; // Declare an HTTPClient object
-
         // Specify the server URL
-        http.begin(serverURL + String("/") + String(controllerId));
+        http.begin(client, serverURL + String("/") + String(controllerId));
 
         String nonce = String(random(1000000, 9999999));
         String timestamp = String(getTimeStamp());
