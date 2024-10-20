@@ -31,6 +31,9 @@ void setup()
   delay(10);
   LOG_DEBUG("Configure time");
   configureTime();
+  delay(10);
+  setupHttps();
+  delay(10);
   pinMode(RELAY_OUTPUT_1, OUTPUT);
   pinMode(RELAY_OUTPUT_2, OUTPUT);
   // Start the DallasTemperature library
