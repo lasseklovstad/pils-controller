@@ -7,7 +7,7 @@
 #define LOG_LEVEL_OFF 0
 
 // Set the active logging level (can be adjusted for development/production)
-#define CURRENT_LOG_LEVEL LOG_LEVEL_OFF
+#define CURRENT_LOG_LEVEL LOG_LEVEL_DEBUG
 
 // ANSI escape codes for color
 #define COLOR_RESET   "\033[0m"

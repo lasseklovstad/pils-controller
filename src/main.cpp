@@ -6,6 +6,7 @@
 #include "httpUtils.h"
 #include "wifiUtils.h"
 #include "timeUtils.h"
+#include "Controller.h"
 
 const int RELAY_OUTPUT_1 = 26;
 const int RELAY_OUTPUT_2 = 27;
@@ -19,6 +20,9 @@ OneWire oneWire(ONE_WIRE_BUS);
 
 // Pass the oneWire reference to DallasTemperature
 DallasTemperature sensors(&oneWire);
+
+Controller controller1(CONTROLLER_ID_1, API_KEY_1);
+Controller controller2(CONTROLLER_ID_2, API_KEY_2);
 
 void setup()
 {
@@ -46,16 +50,26 @@ void loop()
   // Request temperature readings from the sensor
   sensors.requestTemperatures();
 
-  // Fetch and print the temperature
+  // Save temperatures
   float temperatureC1 = sensors.getTempCByIndex(0); // Get temperature in Celsius
   float temperatureC2 = sensors.getTempCByIndex(1); // Get temperature in Celsius
+  controller1.setTemperature(temperatureC1);
+  controller2.setTemperature(temperatureC2);
   LOG_DEBUG("Temperature1: " + String(temperatureC1) + " °C");
   LOG_DEBUG("Temperature2: " + String(temperatureC2) + " °C");
-  postTemperature(temperatureC1, CONTROLLER_ID_1, API_KEY_1);
-  postTemperature(temperatureC2, CONTROLLER_ID_2, API_KEY_2);
 
-  bool isRelayOn1 = getControllerRelayOn(CONTROLLER_ID_1, API_KEY_1);
-  if (isRelayOn1)
+  // Post temperatures to server
+  postTemperature(controller1);
+  postTemperature(controller2);
+
+  // Fetch active batch details
+  updateControllerActiveBatch(controller1);
+  updateControllerActiveBatch(controller2);
+
+  time_t currentTimestamp = getTimeStamp();
+  LOG_DEBUG("Timestamp: " + String(currentTimestamp));
+  
+  if (controller1.shouldTurnOnSource(currentTimestamp))
   {
     LOG_DEBUG("Relay on1");
     digitalWrite(RELAY_OUTPUT_1, HIGH);
@@ -65,8 +79,7 @@ void loop()
     LOG_DEBUG("Relay off1");
     digitalWrite(RELAY_OUTPUT_1, LOW);
   }
-  bool isRelayOn2 = getControllerRelayOn(CONTROLLER_ID_2, API_KEY_2);
-  if (isRelayOn2)
+  if (controller2.shouldTurnOnSource(currentTimestamp))
   {
     LOG_DEBUG("Relay on2");
     digitalWrite(RELAY_OUTPUT_2, HIGH);
@@ -89,5 +102,5 @@ void loop()
   }
 
   // Wait a bit before the next reading
-  delay(2000);
+  delay(10000);
 }

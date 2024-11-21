@@ -78,21 +78,22 @@ String generateHMAC(const char *apiSecret, const String &data)
     return String(hmacHex); // Return the HMAC hex string
 }
 
-void postTemperature(float temperature, const int controllerId, const char *apiSecret)
+void postTemperature(Controller &controller)
 {
     if (WiFi.status() == WL_CONNECTED)
     {
-        LOG_DEBUG("POST temperature");
         HTTPClient http; // Declare an HTTPClient object
 
         // Specify the server URL
-        http.begin(client, serverURL + String("/") + String(controllerId));
+        http.begin(client, serverURL + String("/") + String(controller.getControllerId()));
 
-        String body = String(temperature);
+        String body = String(controller.getTemperature());
         String nonce = String(random(1000000, 9999999));
         String timestamp = String(getTimeStamp());
         String data = timestamp + ":" + nonce;
-        String hmac = generateHMAC(apiSecret, data);
+        String hmac = generateHMAC(controller.getApiKey(), data);
+
+        LOG_DEBUG("teimstamp: " + timestamp);
 
         http.addHeader("HMAC", hmac);
         http.addHeader("Timestamp", timestamp);
@@ -101,9 +102,6 @@ void postTemperature(float temperature, const int controllerId, const char *apiS
 
         // Send the POST request
         int httpResponseCode = http.POST(body);
-
-        // Print the response code
-        LOG_DEBUG("HTTP Response code: " + String(httpResponseCode));
 
         // If there is a response, print the response payload
         if (httpResponseCode != 200)
@@ -122,44 +120,60 @@ void postTemperature(float temperature, const int controllerId, const char *apiS
     }
 }
 
-bool getControllerRelayOn(const int controllerId, const char *apiSecret)
-{
-    if (WiFi.status() == WL_CONNECTED)
-    {
-        LOG_DEBUG("Get controller relay on request");
-        HTTPClient http; // Declare an HTTPClient object
-        // Specify the server URL
-        http.begin(client, serverURL + String("/") + String(controllerId));
-
+void addAuthHeaders(HTTPClient &http, Controller &controller){
         String nonce = String(random(1000000, 9999999));
         String timestamp = String(getTimeStamp());
         String data = timestamp + ":" + nonce;
-        String hmac = generateHMAC(apiSecret, data);
+        String hmac = generateHMAC(controller.getApiKey(), data);
 
         http.addHeader("HMAC", hmac);
         http.addHeader("Timestamp", timestamp);
-        http.addHeader("Nonce", nonce);
+        http.addHeader("Nonce", nonce); 
+}
+
+void updateControllerActiveBatch(Controller &controller)
+{
+    if (WiFi.status() == WL_CONNECTED)
+    {
+        LOG_DEBUG("Get controller batch temperature on request");
+        HTTPClient http; // Declare an HTTPClient object
+        // Specify the server URL
+        http.begin(client, serverURL + String("/") + String(controller.getControllerId()));
+
+        addAuthHeaders(http, controller);
+
+        const char *headerKeys[] = {"x-batch-mode", "x-batch-status"};
+        const size_t headerKeysCount = sizeof(headerKeys) / sizeof(headerKeys[0]);
+        http.collectHeaders(headerKeys, headerKeysCount);
 
         // Send the POST request
         int httpResponseCode = http.GET();
 
-        // Print the response code
-        LOG_DEBUG("HTTP Response code: " + String(httpResponseCode));
         String response = http.getString();
         // If there is a response, print the response payload
-        if (httpResponseCode != 200)
+        if (httpResponseCode == 200)
+        {
+            String mode = http.header("x-batch-mode");
+            String status = http.header("x-batch-status");
+            controller.update(mode, status, response);
+            LOG_DEBUG("Server response: " + String(response));
+            LOG_DEBUG("Mode: " + mode);
+            LOG_DEBUG("Status: " + status);
+        }
+        else if (httpResponseCode == 404)
+        {
+            LOG_DEBUG("404 No batch active for controller");
+            controller.update("none", "inactive", "");
+        }
+        else
         {
             LOG_ERROR("Error on sending GET: " + String(httpResponseCode));
             LOG_ERROR("Server response: " + String(response));
         }
-
-        // End the HTTP connection
         http.end();
-        return response == "true";
     }
     else
     {
         LOG_ERROR("Not connected to Wi-Fi");
     }
-    return false;
 }

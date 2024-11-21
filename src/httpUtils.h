@@ -5,9 +5,10 @@
 #include <WiFiClientSecure.h>
 #include <LittleFS.h> 
 #include <mbedtls/md.h>
+#include "Controller.h"
 
 void setupHttps();
-void postTemperature(float temperature, const int controllerId, const char *apiSecret);
-bool getControllerRelayOn(const int controllerId, const char *apiSecret);
+void postTemperature(Controller&);
+void updateControllerActiveBatch(Controller&);
 
 #endif
