@@ -78,6 +78,18 @@ String generateHMAC(const char *apiSecret, const String &data)
     return String(hmacHex); // Return the HMAC hex string
 }
 
+void addAuthHeaders(HTTPClient &http, Controller &controller)
+{
+    String nonce = String(random(1000000, 9999999));
+    String timestamp = String(getTimeStamp());
+    String data = timestamp + ":" + nonce;
+    String hmac = generateHMAC(controller.getApiKey(), data);
+
+    http.addHeader("HMAC", hmac);
+    http.addHeader("Timestamp", timestamp);
+    http.addHeader("Nonce", nonce);
+}
+
 void postTemperature(Controller &controller)
 {
     if (WiFi.status() == WL_CONNECTED)
@@ -88,16 +100,7 @@ void postTemperature(Controller &controller)
         http.begin(client, serverURL + String("/") + String(controller.getControllerId()));
 
         String body = String(controller.getTemperature());
-        String nonce = String(random(1000000, 9999999));
-        String timestamp = String(getTimeStamp());
-        String data = timestamp + ":" + nonce;
-        String hmac = generateHMAC(controller.getApiKey(), data);
-
-        LOG_DEBUG("teimstamp: " + timestamp);
-
-        http.addHeader("HMAC", hmac);
-        http.addHeader("Timestamp", timestamp);
-        http.addHeader("Nonce", nonce);
+        addAuthHeaders(http, controller);
         http.addHeader("Content-Type", "plain/text");
 
         // Send the POST request
@@ -118,17 +121,6 @@ void postTemperature(Controller &controller)
     {
         LOG_ERROR("Error: Not connected to Wi-Fi");
     }
-}
-
-void addAuthHeaders(HTTPClient &http, Controller &controller){
-        String nonce = String(random(1000000, 9999999));
-        String timestamp = String(getTimeStamp());
-        String data = timestamp + ":" + nonce;
-        String hmac = generateHMAC(controller.getApiKey(), data);
-
-        http.addHeader("HMAC", hmac);
-        http.addHeader("Timestamp", timestamp);
-        http.addHeader("Nonce", nonce); 
 }
 
 void updateControllerActiveBatch(Controller &controller)
