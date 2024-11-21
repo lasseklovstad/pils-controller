@@ -1,0 +1,31 @@
+name: "pr"
+
+on:
+  push:
+    branches:
+      - "**"
+      - "!main"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+
+    # Install PlatformIO
+    - name: Install PlatformIO
+      run: pip install platformio  
+
+    # Install GCC (required for native testing)
+    - name: Install GCC
+      run: sudo apt-get install -y build-essential  
+      
+    # Run PlatformIO native tests
+    - name: Run native tests
+      run: pio test -e native
