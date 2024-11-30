@@ -1,6 +1,8 @@
 #include <unity.h>
 #include "Controller.h"
 
+using namespace fakeit;
+
 void test_example(void) {
     TEST_ASSERT_EQUAL(1, 1);
 }
