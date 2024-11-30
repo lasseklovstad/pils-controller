@@ -1,5 +1,6 @@
 #include <unity.h>
 #include "Controller.h"
+#include "Controller.cpp"
 #include <ArduinoFake.h>
 
 void test_example(void) {
