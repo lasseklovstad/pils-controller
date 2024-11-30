@@ -10,6 +10,17 @@ void setup() {
     UNITY_END();
 }
 
-void loop() {
-    // Nothing to do here
+int runUnityTests(void) {
+  UNITY_BEGIN();
+  RUN_TEST(test_example);
+  return UNITY_END();
+}
+
+// WARNING!!! PLEASE REMOVE UNNECESSARY MAIN IMPLEMENTATIONS //
+
+/**
+  * For native dev-platform or for some embedded frameworks
+  */
+int main(void) {
+  return runUnityTests();
 }
