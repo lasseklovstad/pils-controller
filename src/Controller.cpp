@@ -76,11 +76,16 @@ void Controller::parseTemperaturePeriods(const String &periods)
 
 float Controller::getTargetTemperature(unsigned long currentTimestamp)
 {
-    if (status == Status::PREPARE && temperaturePeriods.size() >= 1)
+    if(temperaturePeriods.size() < 1){
+        return 18.0;
+    }
+
+    if (status == Status::PREPARE || currentTimestamp <= temperaturePeriods[0].first)
     {
         // If the controller is preparing for fermentation return the first temperature
         return temperaturePeriods[0].second;
     }
+
     for (size_t i = 0; i < temperaturePeriods.size() - 1; ++i)
     {
         if (currentTimestamp >= temperaturePeriods[i].first && currentTimestamp < temperaturePeriods[i + 1].first)
