@@ -2,6 +2,7 @@
 #define MOCK_TIME_H
 
 typedef long time_t;
+typedef int clockid_t;
 
 struct tm {
     int tm_sec;   // seconds after the minute [0-60]
