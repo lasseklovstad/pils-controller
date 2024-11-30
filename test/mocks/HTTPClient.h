@@ -2,27 +2,23 @@
 #define MOCK_HTTPCLIENT_H
 
 #include <Arduino.h>
+#include <WiFiClientSecure.h>
 
 class HTTPClient {
 public:
-    int begin(const std::string& url) {
-        // Mock begin behavior
-        return 1;
-    }
-
+    void begin(WiFiClientSecure &client, const String &url) {}
+    void addHeader(const String &name, const String &value) {}
     int GET() {
-        // Mock GET response
-        return 200;
+        return 200; // Mock GET response code
     }
-
     String getString() {
-        // Mock HTTP response body
-        return "{\"mockKey\":\"mockValue\"}";
+        return "{\"mockKey\":\"mockValue\"}"; // Mock response body
     }
-
-    void end() {
-        // Mock end of request
+    void end() {}
+    String header(const String &name) {
+        return "mockHeader"; // Mock header value
     }
+    void collectHeaders(const char **headerKeys, size_t headerKeysCount) {}
 };
 
 #endif // MOCK_HTTPCLIENT_H
