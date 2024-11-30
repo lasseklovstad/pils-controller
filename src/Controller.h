@@ -27,6 +27,8 @@ public:
     
     inline float getTemperature() const { return temperature; }
     inline Mode getMode() const { return mode; }
+    inline Status getStatus() const { return status; }
+    inline const std::vector<std::pair<unsigned long, float>>& getTemperaturePeriods() const { return temperaturePeriods; }
     inline void setTemperature(float temp) { temperature = temp; }
     inline const char * getApiKey() { return apiKey; };
     inline const int getControllerId() { return controllerId; };
