@@ -42,7 +42,7 @@ void setup()
   pinMode(RELAY_OUTPUT_2, OUTPUT);
   // Start the DallasTemperature library
   sensors.begin();
-  pinMode(BUILTIN_LED, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop()
@@ -93,12 +93,12 @@ void loop()
   if (ledOn)
   {
     ledOn = false;
-    digitalWrite(BUILTIN_LED, LOW);
+    digitalWrite(LED_BUILTIN, LOW);
   }
   else
   {
     ledOn = true;
-    digitalWrite(BUILTIN_LED, HIGH);
+    digitalWrite(LED_BUILTIN, HIGH);
   }
 
   // Wait a bit before the next reading
