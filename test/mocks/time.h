@@ -1,8 +1,6 @@
 #ifndef MOCK_TIME_H
 #define MOCK_TIME_H
 
-#include <ctime>
-
 typedef long time_t;
 
 struct tm {
