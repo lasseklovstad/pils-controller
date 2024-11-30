@@ -3,11 +3,19 @@
 
 #include <Arduino.h>
 
-class File {
+class File : public Stream {
 public:
-    bool available() { return true; }
+    int available() { return 1; }
     size_t size() { return 1024; }
     void close() {}
+    
+    int read() override { return -1; }
+    int peek() override { return -1; }
+    void flush() override {}
+    size_t write(uint8_t) override { return 0; }
+    int read(uint8_t *buffer, size_t size) { return 0; }
+    size_t write(const uint8_t *buffer, size_t size) override { return size; }
+    int availableForWrite() override { return 0; }
     // Add other necessary mock methods
 };
 

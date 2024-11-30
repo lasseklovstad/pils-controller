@@ -9,7 +9,10 @@ public:
     void begin(WiFiClientSecure &client, const String &url) {}
     void addHeader(const String &name, const String &value) {}
     int GET() {
-        return 200; // Mock GET response code
+        return 200; 
+    }
+    int POST(String body) {
+        return 200; 
     }
     String getString() {
         return "{\"mockKey\":\"mockValue\"}"; // Mock response body
