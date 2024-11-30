@@ -26,6 +26,7 @@ public:
     void update(const String &mode, const String &status, const String &temperaturePeriods);
     
     inline float getTemperature() const { return temperature; }
+    inline Mode getMode() const { return mode; }
     inline void setTemperature(float temp) { temperature = temp; }
     inline const char * getApiKey() { return apiKey; };
     inline const int getControllerId() { return controllerId; };

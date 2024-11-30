@@ -12,6 +12,8 @@ void test_happy_case_warm_active_shouldTurnOnSource(void){
     controller.update("warm", "active", "1000-18.0;2000-15.0;4000-25.3");
     controller.setTemperature(18.2);
 
+    TEST_ASSERT_EQUAL(controller.getMode(), Mode::WARM);
+
     TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(0), false);
     TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(1500), false);
     TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(2000), false);
@@ -23,6 +25,8 @@ void test_happy_case_cold_active_shouldTurnOnSource(void){
     Controller controller(1, "secret");
     controller.update("cold", "active", "1000-18.0;2000-15.0;4000-25.3");
     controller.setTemperature(18.2);
+
+    TEST_ASSERT_EQUAL(controller.getMode(), Mode::COLD);
 
     TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(0), true);
     TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(1500), true);
