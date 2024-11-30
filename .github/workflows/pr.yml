@@ -28,4 +28,4 @@ jobs:
       
     # Run PlatformIO native tests
     - name: Run native tests
-      run: pio test -e native
+      run: pio test -e native -vvv
