@@ -22,6 +22,8 @@ void compareTemperaturePeriods(const std::vector<std::pair<unsigned long, float>
 
 void test_happy_case_warm_active_shouldTurnOnSource(void)
 {
+  When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
+  When(Method(ArduinoFake(), millis)).AlwaysReturn(0);
   Controller controller(1, "secret", 1);
   controller.update("warm", "active", "1000-18.0;2000-15.0;4000-25.3", "", "", "");
   controller.setTemperature(18.2);
