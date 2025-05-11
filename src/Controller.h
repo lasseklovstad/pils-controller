@@ -25,8 +25,9 @@ public:
     Controller(const int controllerId, const char *apiKey, const int relayOutput);
     bool shouldTurnOnSource(unsigned long currentTimestamp);
     void updateSource(unsigned long currentTimestamp);
-    void update(const String &mode, const String &status, const String &temperaturePeriods);
+    void update(const String &mode, const String &status, const String &temperaturePeriods, const String &minDelay, const String &avgBufferSize, const String &hysteresis);
     void setTemperature(float temp);
+    void reset();
 
     inline float getTemperature() const { return temperature; }
     inline Mode getMode() const { return mode; }
@@ -45,7 +46,10 @@ private:
     const int relayOutput;
     boolean isSourceOn;
     unsigned long lastSwitchTimestamp;
-    unsigned long minSwitchDelay; // Minimum delay between source state changes
+    unsigned long minSwitchDelay;        // Minimum delay between source state changes
+    std::deque<float> temperatureBuffer; // Buffer to store recent temperature readings
+    size_t maxBufferSize = 5;            // Maximum size of the buffer for moving average
+    float hysteresis = 0;
 
     /**  Returns the target temperature for the current timestamp from the temperature periods  */
     float getTargetTemperature(unsigned long currentTimestamp);
@@ -54,9 +58,6 @@ private:
     Status stringToStatus(const String &statusStr);
     void turnOnSource();
     void turnOffSource();
-
-    std::deque<float> temperatureBuffer; // Buffer to store recent temperature readings
-    const size_t maxBufferSize = 5; // Maximum size of the buffer for moving average
 
     /** Calculates the moving average of the temperature readings */
     float calculateMovingAverage();

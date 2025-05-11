@@ -134,7 +134,7 @@ void updateControllerActiveBatch(Controller &controller)
 
         addAuthHeaders(http, controller);
 
-        const char *headerKeys[] = {"x-batch-mode", "x-batch-status"};
+        const char *headerKeys[] = {"x-batch-mode", "x-batch-status", "x-controller-min-delay", "x-controller-avg-buffer-size", "x-controller-hysteresis"};
         const size_t headerKeysCount = sizeof(headerKeys) / sizeof(headerKeys[0]);
         http.collectHeaders(headerKeys, headerKeysCount);
 
@@ -147,15 +147,21 @@ void updateControllerActiveBatch(Controller &controller)
         {
             String mode = http.header("x-batch-mode");
             String status = http.header("x-batch-status");
-            controller.update(mode, status, response);
+            String minDelay = http.header("x-controller-min-delay");
+            String avgBufferSize = http.header("x-controller-avg-buffer-size");
+            String hysteresis = http.header("x-controller-hysteresis");
+            controller.update(mode, status, response, minDelay, avgBufferSize, hysteresis);
             LOG_DEBUG("Server response: " + String(response));
             LOG_DEBUG("Mode: " + mode);
             LOG_DEBUG("Status: " + status);
+            LOG_DEBUG("Min delay: " + minDelay);
+            LOG_DEBUG("Average buffer size: " + avgBufferSize);
+            LOG_DEBUG("Hysteresis: " + hysteresis);
         }
         else if (httpResponseCode == 404)
         {
             LOG_DEBUG("404 No batch active for controller");
-            controller.update("none", "inactive", "");
+            controller.reset();
         }
         else
         {

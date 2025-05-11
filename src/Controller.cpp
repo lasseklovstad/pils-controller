@@ -6,12 +6,42 @@ Controller::Controller(const int controllerId, const char *apiKey, const int rel
     parseTemperaturePeriods("");
 }
 
-void Controller::update(const String &mode, const String &status, const String &temperaturePeriods)
+void Controller::update(const String &mode, const String &status, const String &temperaturePeriods, const String &minDelayInSec, const String &avgBufferSize, const String &hysteresis)
 {
     this->mode = stringToMode(mode);
     this->status = stringToStatus(status);
     this->temperaturePeriods.clear();
     parseTemperaturePeriods(temperaturePeriods);
+
+    // Handle minDelayInSec
+    if (minDelayInSec.length() > 0)
+    {
+        this->minSwitchDelay = minDelayInSec.toInt() * 1000; // Convert seconds to milliseconds
+    }
+    else
+    {
+        this->minSwitchDelay = 30000; // Default to 30 seconds
+    }
+
+    // Handle avgBufferSize
+    if (avgBufferSize.length() > 0)
+    {
+        this->maxBufferSize = avgBufferSize.toInt();
+    }
+    else
+    {
+        this->maxBufferSize = 5; // Default buffer size
+    }
+
+    // Handle hysteresis
+    if (hysteresis.length() > 0)
+    {
+        this->hysteresis = hysteresis.toFloat();
+    }
+    else
+    {
+        this->hysteresis = 0; // Default hysteresis
+    }
 }
 
 Mode Controller::stringToMode(const String &modeStr)
@@ -163,6 +193,7 @@ void Controller::updateSource(unsigned long currentTimestamp)
     else if (mode == Mode::NONE)
     {
         LOG_ERROR("Mode none, this should not happen");
+        turnOffSource();
     }
 }
 
@@ -217,4 +248,18 @@ float Controller::calculateMovingAverage()
         sum += temp;
     }
     return sum / temperatureBuffer.size();
+}
+
+void Controller::reset()
+{
+    mode = Mode::NONE;
+    status = Status::INACTIVE;
+    temperaturePeriods.clear();
+    temperature = -127; // Reset to default invalid temperature
+    isSourceOn = false;
+    lastSwitchTimestamp = 0;
+    minSwitchDelay = 30000; // Reset to default 30 seconds
+    temperatureBuffer.clear();
+    maxBufferSize = 5; // Reset to default buffer size
+    hysteresis = 0; // Reset to default hysteresis
 }
