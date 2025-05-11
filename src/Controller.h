@@ -23,7 +23,6 @@ class Controller
 {
 public:
     Controller(const int controllerId, const char *apiKey, const int relayOutput);
-    bool shouldTurnOnSource(unsigned long currentTimestamp);
     void updateSource(unsigned long currentTimestamp);
     void update(const String &mode, const String &status, const String &temperaturePeriods, const String &minDelay, const String &avgBufferSize, const String &hysteresis);
     void setTemperature(float temp);
@@ -32,6 +31,10 @@ public:
     inline float getTemperature() const { return temperature; }
     inline Mode getMode() const { return mode; }
     inline Status getStatus() const { return status; }
+    inline boolean getIsSourceOn() const { return isSourceOn; }
+    inline float getHysteresis() const { return hysteresis; }
+    inline size_t getMaxBufferSize() const { return maxBufferSize; }
+    inline unsigned long getMinSwitchDelay() const { return minSwitchDelay; }
     inline const std::vector<std::pair<unsigned long, float>> &getTemperaturePeriods() const { return temperaturePeriods; }
     inline const char *getApiKey() { return apiKey; };
     inline const int getControllerId() { return controllerId; };

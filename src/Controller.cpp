@@ -127,33 +127,6 @@ float Controller::getTargetTemperature(unsigned long currentTimestamp)
     return temperaturePeriods.back().second; // Return the last temperature if currentTimestamp is beyond the last timestamp
 }
 
-bool Controller::shouldTurnOnSource(unsigned long currentTimestamp)
-{
-    if (status == Status::INACTIVE)
-    {
-        return false;
-    }
-
-    float targetTemperature = getTargetTemperature(currentTimestamp);
-    float averageTemperature = calculateMovingAverage();
-    LOG_DEBUG("Target temperature: " + String(targetTemperature));
-    LOG_DEBUG("Average temperature: " + String(averageTemperature));
-
-    if (mode == Mode::COLD)
-    {
-        return averageTemperature > targetTemperature;
-    }
-    else if (mode == Mode::WARM)
-    {
-        return averageTemperature < targetTemperature;
-    }
-    else if (mode == Mode::NONE)
-    {
-        LOG_ERROR("Mode none, this should not happen");
-    }
-    return false; // Default case if mode is not recognized
-}
-
 void Controller::updateSource(unsigned long currentTimestamp)
 {
     if (status == Status::INACTIVE)
