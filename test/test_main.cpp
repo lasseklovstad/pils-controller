@@ -178,6 +178,15 @@ void test_happy_case_warm_prepare_shouldTurnOnSource(void)
   TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
 }
 
+// This function will run before each test
+void setUp(void)
+{
+    // Initialize mocks
+    When(Method(ArduinoFake, millis)).Return(1000);
+    When(Method(ArduinoFake, digitalWrite)).AlwaysReturn();
+    ArduinoFakeReset();
+}
+
 void setup()
 {
   UNITY_BEGIN();
