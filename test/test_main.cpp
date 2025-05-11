@@ -25,13 +25,13 @@ void test_happy_case_warm_active_shouldTurnOnSource(void)
   When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
   When(Method(ArduinoFake(), millis)).AlwaysReturn(0);
   Controller controller(1, "secret", 1);
-  controller.update("warm", "active", "1000-18.0;2000-15.0;4000-25.3", "", "", "");
+  controller.update("warm", "active", "1000-18.0;2000-15.0;4000-25.3", "0", "", "");
   controller.setTemperature(18.2);
 
   TEST_ASSERT_EQUAL(controller.getMode(), Mode::WARM);
   TEST_ASSERT_EQUAL(controller.getStatus(), Status::ACTIVE);
   TEST_ASSERT_EQUAL(controller.getMaxBufferSize(), 5);
-  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 30000);
+  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 0);
   TEST_ASSERT_EQUAL(controller.getHysteresis(), 0.0);
   compareTemperaturePeriods({{1000, 18.0},
                              {2000, 15.0},
