@@ -181,10 +181,10 @@ void test_happy_case_warm_prepare_shouldTurnOnSource(void)
 // This function will run before each test
 void setUp(void)
 {
-    // Initialize mocks
-    When(Method(ArduinoFake, millis)).Return(1000);
-    When(Method(ArduinoFake, digitalWrite)).AlwaysReturn();
-    ArduinoFakeReset();
+  ArduinoFakeReset();
+  // Initialize mocks
+  When(Method(ArduinoFake, millis)).Return(1000);
+  When(Method(ArduinoFake, digitalWrite)).AlwaysReturn();
 }
 
 void setup()
