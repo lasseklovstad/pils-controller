@@ -141,24 +141,22 @@ void Controller::updateSource(unsigned long currentTimestamp)
 
     if (mode == Mode::COLD)
     {
-        bool shouldTurnOnSource = averageTemperature > targetTemperature;
-        if (shouldTurnOnSource)
+        if (!isSourceOn && averageTemperature > (targetTemperature + hysteresis))
         {
             turnOnSource();
         }
-        else
+        else if (isSourceOn && averageTemperature <= (targetTemperature - hysteresis))
         {
             turnOffSource();
         }
     }
     else if (mode == Mode::WARM)
     {
-        bool shouldTurnOnSource = averageTemperature < targetTemperature;
-        if (shouldTurnOnSource)
+        if (!isSourceOn && averageTemperature < (targetTemperature - hysteresis))
         {
             turnOnSource();
         }
-        else
+        else if(isSourceOn && averageTemperature >= (targetTemperature + hysteresis))
         {
             turnOffSource();
         }
@@ -178,6 +176,7 @@ void Controller::turnOnSource()
         return;
     }
     digitalWrite(relayOutput, HIGH);
+    LOG_DEBUG("Turn on source");
     isSourceOn = true;
     lastSwitchTimestamp = millis();
 }
@@ -190,6 +189,7 @@ void Controller::turnOffSource()
         return;
     }
     digitalWrite(relayOutput, LOW);
+    LOG_DEBUG("Turn off source");
     isSourceOn = false;
     lastSwitchTimestamp = millis();
 }
@@ -234,5 +234,5 @@ void Controller::reset()
     minSwitchDelay = 30000; // Reset to default 30 seconds
     temperatureBuffer.clear();
     maxBufferSize = 5; // Reset to default buffer size
-    hysteresis = 0; // Reset to default hysteresis
+    hysteresis = 0;    // Reset to default hysteresis
 }
