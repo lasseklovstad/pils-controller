@@ -184,9 +184,6 @@ void test_happy_case_warm_prepare_shouldTurnOnSource(void)
 void setUp(void)
 {
   ArduinoFakeReset();
-  // Initialize mocks
-  When(Method(ArduinoFake(), millis)).Return(1000);
-  When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
 }
 
 void setup()
