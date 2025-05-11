@@ -43,6 +43,7 @@ private:
     const char *apiKey;
     const int relayOutput;
     boolean isSourceOn;
+    unsigned long lastSwitchTimestamp;
 
     /**  Returns the target temperature for the current timestamp from the temperature periods  */
     float getTargetTemperature(unsigned long currentTimestamp);
