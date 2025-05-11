@@ -111,12 +111,12 @@ void test_happy_case_cold_prepare_shouldTurnOnSource(void)
   When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
   When(Method(ArduinoFake(), millis)).AlwaysReturn(0);
   Controller controller(1, "secret", 1);
-  controller.update("cold", "prepare", "1000-18.0;2000-15.0", "0", "", "");
+  controller.update("cold", "prepare", "1000-18.0;2000-15.0", "0", "0", "");
   controller.setTemperature(18.2);
 
   TEST_ASSERT_EQUAL(controller.getMode(), Mode::COLD);
   TEST_ASSERT_EQUAL(controller.getStatus(), Status::PREPARE);
-  TEST_ASSERT_EQUAL(controller.getMaxBufferSize(), 5);
+  TEST_ASSERT_EQUAL(controller.getMaxBufferSize(), 0);
   TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 0);
   TEST_ASSERT_EQUAL(controller.getHysteresis(), 0.0);
   compareTemperaturePeriods({{1000, 18.0},
