@@ -76,7 +76,7 @@ void test_happy_case_cold_active_shouldTurnOnSource(void)
 void test_happy_case_none_inactive_shouldTurnOnSource(void)
 {
   Controller controller(1, "secret", 1);
-  controller.update("none", "inactive", "");
+  controller.update("none", "inactive", "", "", "", "");
   controller.setTemperature(18.2);
 
   TEST_ASSERT_EQUAL(controller.getMode(), Mode::NONE);
