@@ -20,7 +20,7 @@ void compareTemperaturePeriods(const std::vector<std::pair<unsigned long, float>
 
 void test_happy_case_warm_active_shouldTurnOnSource(void)
 {
-  Controller controller(1, "secret");
+  Controller controller(1, "secret", 1);
   controller.update("warm", "active", "1000-18.0;2000-15.0;4000-25.3");
   controller.setTemperature(18.2);
 
@@ -40,7 +40,7 @@ void test_happy_case_warm_active_shouldTurnOnSource(void)
 
 void test_happy_case_cold_active_shouldTurnOnSource(void)
 {
-  Controller controller(1, "secret");
+  Controller controller(1, "secret", 1);
   controller.update("cold", "active", "1000-18.0;2000-15.0;4000-25.3");
   controller.setTemperature(18.2);
 
@@ -60,7 +60,7 @@ void test_happy_case_cold_active_shouldTurnOnSource(void)
 
 void test_happy_case_none_inactive_shouldTurnOnSource(void)
 {
-  Controller controller(1, "secret");
+  Controller controller(1, "secret", 1);
   controller.update("none", "inactive", "");
   controller.setTemperature(18.2);
 
@@ -77,7 +77,7 @@ void test_happy_case_none_inactive_shouldTurnOnSource(void)
 
 void test_happy_case_cold_prepare_shouldTurnOnSource(void)
 {
-  Controller controller(1, "secret");
+  Controller controller(1, "secret", 1);
   controller.update("cold", "prepare", "1000-18.0;2000-15.0");
   controller.setTemperature(18.2);
 
@@ -104,7 +104,7 @@ void test_happy_case_cold_prepare_shouldTurnOnSource(void)
 
 void test_happy_case_warm_prepare_shouldTurnOnSource(void)
 {
-  Controller controller(1, "secret");
+  Controller controller(1, "secret", 1);
   controller.update("warm", "prepare", "1000-18.0;2000-15.0");
   controller.setTemperature(17.9);
 
