@@ -3,6 +3,8 @@
 #include "Controller.cpp"
 #include <ArduinoFake.h>
 
+using namespace fakeit;
+
 void test_example(void)
 {
   TEST_ASSERT_EQUAL(1, 1);
