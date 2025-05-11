@@ -21,8 +21,8 @@ OneWire oneWire(ONE_WIRE_BUS);
 // Pass the oneWire reference to DallasTemperature
 DallasTemperature sensors(&oneWire);
 
-Controller controller1(CONTROLLER_ID_1, API_KEY_1);
-Controller controller2(CONTROLLER_ID_2, API_KEY_2);
+Controller controller1(CONTROLLER_ID_1, API_KEY_1, RELAY_OUTPUT_1);
+Controller controller2(CONTROLLER_ID_2, API_KEY_2, RELAY_OUTPUT_2);
 
 void setup()
 {
@@ -68,38 +68,8 @@ void loop()
 
   time_t currentTimestamp = getTimeStamp();
   LOG_DEBUG("Timestamp: " + String(currentTimestamp));
-  
-  if (controller1.shouldTurnOnSource(currentTimestamp))
-  {
-    LOG_DEBUG("Relay on1");
-    digitalWrite(RELAY_OUTPUT_1, HIGH);
-  }
-  else
-  {
-    LOG_DEBUG("Relay off1");
-    digitalWrite(RELAY_OUTPUT_1, LOW);
-  }
-  if (controller2.shouldTurnOnSource(currentTimestamp))
-  {
-    LOG_DEBUG("Relay on2");
-    digitalWrite(RELAY_OUTPUT_2, HIGH);
-  }
-  else
-  {
-    LOG_DEBUG("Relay off2");
-    digitalWrite(RELAY_OUTPUT_2, LOW);
-  }
-
-  if (ledOn)
-  {
-    ledOn = false;
-    digitalWrite(LED_BUILTIN, LOW);
-  }
-  else
-  {
-    ledOn = true;
-    digitalWrite(LED_BUILTIN, HIGH);
-  }
+  controller1.updateSource(currentTimestamp);
+  controller2.updateSource(currentTimestamp);
 
   // Wait a bit before the next reading
   delay(10000);

@@ -1,7 +1,7 @@
 #include "Controller.h"
 #include <logging.h>
 
-Controller::Controller(const int controllerId, const char *apiKey) : mode(Mode::NONE), status(Status::INACTIVE), controllerId(controllerId), apiKey(apiKey), temperature(-127)
+Controller::Controller(const int controllerId, const char *apiKey, const int relayOutput) : mode(Mode::NONE), status(Status::INACTIVE), controllerId(controllerId), apiKey(apiKey), temperature(-127), relayOutput(relayOutput), isSourceOn(false)
 {
     parseTemperaturePeriods("");
 }
@@ -76,7 +76,8 @@ void Controller::parseTemperaturePeriods(const String &periods)
 
 float Controller::getTargetTemperature(unsigned long currentTimestamp)
 {
-    if(temperaturePeriods.size() < 1){
+    if (temperaturePeriods.size() < 1)
+    {
         return 18.0;
     }
 
@@ -119,4 +120,56 @@ bool Controller::shouldTurnOnSource(unsigned long currentTimestamp)
         LOG_ERROR("Mode none, this should not happen");
     }
     return false; // Default case if mode is not recognized
+}
+
+void Controller::updateSource(unsigned long currentTimestamp)
+{
+    if (status == Status::INACTIVE)
+    {
+        return;
+    }
+
+    float currentTemperature = getTargetTemperature(currentTimestamp);
+    LOG_DEBUG("Target temperature: " + String(currentTemperature));
+
+    if (mode == Mode::COLD)
+    {
+        bool shouldTurnOnSource = temperature > currentTemperature;
+        if (shouldTurnOnSource)
+        {
+            turnOnSource();
+        }
+        else
+        {
+            turnOffSource();
+        }
+    }
+    else if (mode == Mode::WARM)
+    {
+        bool shouldTurnOnSource = temperature < currentTemperature;
+        if (shouldTurnOnSource)
+        {
+            turnOnSource();
+        }
+        else
+        {
+            turnOffSource();
+        }
+    }
+    else if (mode == Mode::NONE)
+    {
+        LOG_ERROR("Mode none, this should not happen");
+    }
+}
+
+void Controller::turnOnSource()
+{
+    digitalWrite(relayOutput, HIGH);
+    isSourceOn = true;
+}
+
+void Controller::turnOffSource()
+{
+    digitalWrite(relayOutput, LOW);
+    isSourceOn = false;
 }
