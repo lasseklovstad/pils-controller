@@ -183,8 +183,8 @@ void setUp(void)
 {
   ArduinoFakeReset();
   // Initialize mocks
-  When(Method(ArduinoFake, millis)).Return(1000);
-  When(Method(ArduinoFake, digitalWrite)).AlwaysReturn();
+  When(Method(ArduinoFake(), millis)).Return(1000);
+  When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
 }
 
 void setup()
