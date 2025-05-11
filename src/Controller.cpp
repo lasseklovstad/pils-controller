@@ -154,14 +154,7 @@ void Controller::updateSource(unsigned long currentTimestamp)
     else if (mode == Mode::WARM)
     {
         bool shouldTurnOnSource = averageTemperature < targetTemperature;
-        if (shouldTurnOnSource)
-        {
-            turnOnSource();
-        }
-        else
-        {
-            turnOffSource();
-        }
+        
     }
     else if (mode == Mode::NONE)
     {
