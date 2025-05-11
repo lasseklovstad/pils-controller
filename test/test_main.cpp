@@ -54,13 +54,13 @@ void test_happy_case_cold_active_shouldTurnOnSource(void)
   When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
   When(Method(ArduinoFake(), millis)).AlwaysReturn(0);
   Controller controller(1, "secret", 1);
-  controller.update("cold", "active", "1000-18.0;2000-15.0;4000-25.3", "", "", "");
+  controller.update("cold", "active", "1000-18.0;2000-15.0;4000-25.3", "0", "", "");
   controller.setTemperature(18.2);
 
   TEST_ASSERT_EQUAL(controller.getMode(), Mode::COLD);
   TEST_ASSERT_EQUAL(controller.getStatus(), Status::ACTIVE);
   TEST_ASSERT_EQUAL(controller.getMaxBufferSize(), 5);
-  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 30000);
+  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 0);
   TEST_ASSERT_EQUAL(controller.getHysteresis(), 0.0);
   compareTemperaturePeriods({{1000, 18.0},
                              {2000, 15.0},
@@ -84,13 +84,13 @@ void test_happy_case_none_inactive_shouldTurnOnSource(void)
   When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
   When(Method(ArduinoFake(), millis)).AlwaysReturn(0);
   Controller controller(1, "secret", 1);
-  controller.update("none", "inactive", "", "", "", "");
+  controller.update("none", "inactive", "", "0", "", "");
   controller.setTemperature(18.2);
 
   TEST_ASSERT_EQUAL(controller.getMode(), Mode::NONE);
   TEST_ASSERT_EQUAL(controller.getStatus(), Status::INACTIVE);
   TEST_ASSERT_EQUAL(controller.getMaxBufferSize(), 5);
-  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 30000);
+  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 0);
   TEST_ASSERT_EQUAL(controller.getHysteresis(), 0.0);
   compareTemperaturePeriods({}, controller.getTemperaturePeriods());
 
@@ -111,13 +111,13 @@ void test_happy_case_cold_prepare_shouldTurnOnSource(void)
   When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
   When(Method(ArduinoFake(), millis)).AlwaysReturn(0);
   Controller controller(1, "secret", 1);
-  controller.update("cold", "prepare", "1000-18.0;2000-15.0", "", "", "");
+  controller.update("cold", "prepare", "1000-18.0;2000-15.0", "0", "", "");
   controller.setTemperature(18.2);
 
   TEST_ASSERT_EQUAL(controller.getMode(), Mode::COLD);
   TEST_ASSERT_EQUAL(controller.getStatus(), Status::PREPARE);
   TEST_ASSERT_EQUAL(controller.getMaxBufferSize(), 5);
-  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 30000);
+  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 0);
   TEST_ASSERT_EQUAL(controller.getHysteresis(), 0.0);
   compareTemperaturePeriods({{1000, 18.0},
                              {2000, 15.0}},
@@ -153,13 +153,13 @@ void test_happy_case_warm_prepare_shouldTurnOnSource(void)
   When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
   When(Method(ArduinoFake(), millis)).AlwaysReturn(0);
   Controller controller(1, "secret", 1);
-  controller.update("warm", "prepare", "1000-18.0;2000-15.0", "", "", "");
+  controller.update("warm", "prepare", "1000-18.0;2000-15.0", "0", "", "");
   controller.setTemperature(17.9);
 
   TEST_ASSERT_EQUAL(controller.getMode(), Mode::WARM);
   TEST_ASSERT_EQUAL(controller.getStatus(), Status::PREPARE);
   TEST_ASSERT_EQUAL(controller.getMaxBufferSize(), 5);
-  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 30000);
+  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 0);
   TEST_ASSERT_EQUAL(controller.getHysteresis(), 0.0);
   compareTemperaturePeriods({{1000, 18.0},
                              {2000, 15.0}},
