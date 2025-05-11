@@ -44,6 +44,7 @@ private:
     const int relayOutput;
     boolean isSourceOn;
     unsigned long lastSwitchTimestamp;
+    unsigned long minSwitchDelay; // Minimum delay between source state changes
 
     /**  Returns the target temperature for the current timestamp from the temperature periods  */
     float getTargetTemperature(unsigned long currentTimestamp);

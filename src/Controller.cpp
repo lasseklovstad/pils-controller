@@ -1,7 +1,7 @@
 #include "Controller.h"
 #include <logging.h>
 
-Controller::Controller(const int controllerId, const char *apiKey, const int relayOutput) : mode(Mode::NONE), status(Status::INACTIVE), controllerId(controllerId), apiKey(apiKey), temperature(-127), relayOutput(relayOutput), isSourceOn(false), lastSwitchTimestamp(0)
+Controller::Controller(const int controllerId, const char *apiKey, const int relayOutput) : mode(Mode::NONE), status(Status::INACTIVE), controllerId(controllerId), apiKey(apiKey), temperature(-127), relayOutput(relayOutput), isSourceOn(false), lastSwitchTimestamp(0), minSwitchDelay(30000) // Default to 30 seconds
 {
     parseTemperaturePeriods("");
 }
@@ -164,6 +164,11 @@ void Controller::updateSource(unsigned long currentTimestamp)
 
 void Controller::turnOnSource()
 {
+    if (millis() - lastSwitchTimestamp < minSwitchDelay)
+    {
+        LOG_DEBUG("Switching too soon, ignoring turnOnSource request");
+        return;
+    }
     digitalWrite(relayOutput, HIGH);
     isSourceOn = true;
     lastSwitchTimestamp = millis();
@@ -171,6 +176,11 @@ void Controller::turnOnSource()
 
 void Controller::turnOffSource()
 {
+    if (millis() - lastSwitchTimestamp < minSwitchDelay)
+    {
+        LOG_DEBUG("Switching too soon, ignoring turnOffSource request");
+        return;
+    }
     digitalWrite(relayOutput, LOW);
     isSourceOn = false;
     lastSwitchTimestamp = millis();
