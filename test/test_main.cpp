@@ -3,6 +3,8 @@
 #include "Controller.cpp"
 #include <ArduinoFake.h>
 
+using namespace fakeit;
+
 void test_example(void)
 {
   TEST_ASSERT_EQUAL(1, 1);
@@ -20,113 +22,178 @@ void compareTemperaturePeriods(const std::vector<std::pair<unsigned long, float>
 
 void test_happy_case_warm_active_shouldTurnOnSource(void)
 {
-  Controller controller(1, "secret");
-  controller.update("warm", "active", "1000-18.0;2000-15.0;4000-25.3");
+  When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
+  When(Method(ArduinoFake(), millis)).AlwaysReturn(0);
+  Controller controller(1, "secret", 1);
+  controller.update("warm", "active", "1000-18.0;2000-15.0;4000-25.3", "0", "", "");
   controller.setTemperature(18.2);
 
   TEST_ASSERT_EQUAL(controller.getMode(), Mode::WARM);
   TEST_ASSERT_EQUAL(controller.getStatus(), Status::ACTIVE);
+  TEST_ASSERT_EQUAL(controller.getMaxBufferSize(), 5);
+  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 0);
+  TEST_ASSERT_EQUAL(controller.getHysteresis(), 0.0);
   compareTemperaturePeriods({{1000, 18.0},
                              {2000, 15.0},
                              {4000, 25.3}},
                             controller.getTemperaturePeriods());
-
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(0), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(1500), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(2000), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(4000), true);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(5000), true);
+  controller.updateSource(0);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(1500);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(2000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(4000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
+  controller.updateSource(5000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
 }
 
 void test_happy_case_cold_active_shouldTurnOnSource(void)
 {
-  Controller controller(1, "secret");
-  controller.update("cold", "active", "1000-18.0;2000-15.0;4000-25.3");
+  When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
+  When(Method(ArduinoFake(), millis)).AlwaysReturn(0);
+  Controller controller(1, "secret", 1);
+  controller.update("cold", "active", "1000-18.0;2000-15.0;4000-25.3", "0", "", "");
   controller.setTemperature(18.2);
 
   TEST_ASSERT_EQUAL(controller.getMode(), Mode::COLD);
   TEST_ASSERT_EQUAL(controller.getStatus(), Status::ACTIVE);
+  TEST_ASSERT_EQUAL(controller.getMaxBufferSize(), 5);
+  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 0);
+  TEST_ASSERT_EQUAL(controller.getHysteresis(), 0.0);
   compareTemperaturePeriods({{1000, 18.0},
                              {2000, 15.0},
                              {4000, 25.3}},
                             controller.getTemperaturePeriods());
 
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(0), true);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(1500), true);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(2000), true);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(4000), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(5000), false);
+  controller.updateSource(0);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
+  controller.updateSource(1500);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
+  controller.updateSource(2000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
+  controller.updateSource(4000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(5000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
 }
 
 void test_happy_case_none_inactive_shouldTurnOnSource(void)
 {
-  Controller controller(1, "secret");
-  controller.update("none", "inactive", "");
+  When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
+  When(Method(ArduinoFake(), millis)).AlwaysReturn(0);
+  Controller controller(1, "secret", 1);
+  controller.update("none", "inactive", "", "0", "", "");
   controller.setTemperature(18.2);
 
   TEST_ASSERT_EQUAL(controller.getMode(), Mode::NONE);
   TEST_ASSERT_EQUAL(controller.getStatus(), Status::INACTIVE);
+  TEST_ASSERT_EQUAL(controller.getMaxBufferSize(), 5);
+  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 0);
+  TEST_ASSERT_EQUAL(controller.getHysteresis(), 0.0);
   compareTemperaturePeriods({}, controller.getTemperaturePeriods());
 
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(0), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(1500), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(2000), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(4000), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(5000), false);
+  controller.updateSource(0);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(1500);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(2000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(4000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(5000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
 }
 
 void test_happy_case_cold_prepare_shouldTurnOnSource(void)
 {
-  Controller controller(1, "secret");
-  controller.update("cold", "prepare", "1000-18.0;2000-15.0");
+  When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
+  When(Method(ArduinoFake(), millis)).AlwaysReturn(0);
+  Controller controller(1, "secret", 1);
+  controller.update("cold", "prepare", "1000-18.0;2000-15.0", "0", "0", "");
   controller.setTemperature(18.2);
 
   TEST_ASSERT_EQUAL(controller.getMode(), Mode::COLD);
   TEST_ASSERT_EQUAL(controller.getStatus(), Status::PREPARE);
+  TEST_ASSERT_EQUAL(controller.getMaxBufferSize(), 0);
+  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 0);
+  TEST_ASSERT_EQUAL(controller.getHysteresis(), 0.0);
   compareTemperaturePeriods({{1000, 18.0},
                              {2000, 15.0}},
                             controller.getTemperaturePeriods());
 
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(0), true);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(1500), true);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(2000), true);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(4000), true);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(5000), true);
+  controller.updateSource(0);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
+  controller.updateSource(1500);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
+  controller.updateSource(2000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
+  controller.updateSource(4000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
+  controller.updateSource(5000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
 
   controller.setTemperature(17.9);
 
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(0), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(1500), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(2000), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(4000), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(5000), false);
+  controller.updateSource(0);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(1500);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(2000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(4000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(5000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
 }
 
 void test_happy_case_warm_prepare_shouldTurnOnSource(void)
 {
-  Controller controller(1, "secret");
-  controller.update("warm", "prepare", "1000-18.0;2000-15.0");
+  When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
+  When(Method(ArduinoFake(), millis)).AlwaysReturn(0);
+  Controller controller(1, "secret", 1);
+  controller.update("warm", "prepare", "1000-18.0;2000-15.0", "0", "", "");
   controller.setTemperature(17.9);
 
   TEST_ASSERT_EQUAL(controller.getMode(), Mode::WARM);
   TEST_ASSERT_EQUAL(controller.getStatus(), Status::PREPARE);
+  TEST_ASSERT_EQUAL(controller.getMaxBufferSize(), 5);
+  TEST_ASSERT_EQUAL(controller.getMinSwitchDelay(), 0);
+  TEST_ASSERT_EQUAL(controller.getHysteresis(), 0.0);
   compareTemperaturePeriods({{1000, 18.0},
                              {2000, 15.0}},
                             controller.getTemperaturePeriods());
 
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(0), true);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(1500), true);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(2000), true);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(4000), true);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(5000), true);
+  controller.updateSource(0);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
+  controller.updateSource(1500);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
+  controller.updateSource(2000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
+  controller.updateSource(4000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
+  controller.updateSource(5000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), true);
 
   controller.setTemperature(18.3);
 
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(0), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(1500), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(2000), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(4000), false);
-  TEST_ASSERT_EQUAL(controller.shouldTurnOnSource(5000), false);
+  controller.updateSource(0);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(1500);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(2000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(4000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+  controller.updateSource(5000);
+  TEST_ASSERT_EQUAL(controller.getIsSourceOn(), false);
+}
+
+// This function will run before each test
+void setUp(void)
+{
+  ArduinoFakeReset();
 }
 
 void setup()
