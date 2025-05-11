@@ -104,16 +104,18 @@ bool Controller::shouldTurnOnSource(unsigned long currentTimestamp)
         return false;
     }
 
-    float currentTemperature = getTargetTemperature(currentTimestamp);
-    LOG_DEBUG("Target temperature: " + String(currentTemperature));
+    float targetTemperature = getTargetTemperature(currentTimestamp);
+    float averageTemperature = calculateMovingAverage();
+    LOG_DEBUG("Target temperature: " + String(targetTemperature));
+    LOG_DEBUG("Average temperature: " + String(averageTemperature));
 
     if (mode == Mode::COLD)
     {
-        return temperature > currentTemperature;
+        return averageTemperature > targetTemperature;
     }
     else if (mode == Mode::WARM)
     {
-        return temperature < currentTemperature;
+        return averageTemperature < targetTemperature;
     }
     else if (mode == Mode::NONE)
     {
@@ -129,12 +131,14 @@ void Controller::updateSource(unsigned long currentTimestamp)
         return;
     }
 
-    float currentTemperature = getTargetTemperature(currentTimestamp);
-    LOG_DEBUG("Target temperature: " + String(currentTemperature));
+    float targetTemperature = getTargetTemperature(currentTimestamp);
+    float averageTemperature = calculateMovingAverage();
+    LOG_DEBUG("Target temperature: " + String(targetTemperature));
+    LOG_DEBUG("Average temperature: " + String(averageTemperature));
 
     if (mode == Mode::COLD)
     {
-        bool shouldTurnOnSource = temperature > currentTemperature;
+        bool shouldTurnOnSource = averageTemperature > targetTemperature;
         if (shouldTurnOnSource)
         {
             turnOnSource();
@@ -146,7 +150,7 @@ void Controller::updateSource(unsigned long currentTimestamp)
     }
     else if (mode == Mode::WARM)
     {
-        bool shouldTurnOnSource = temperature < currentTemperature;
+        bool shouldTurnOnSource = averageTemperature < targetTemperature;
         if (shouldTurnOnSource)
         {
             turnOnSource();
@@ -184,4 +188,33 @@ void Controller::turnOffSource()
     digitalWrite(relayOutput, LOW);
     isSourceOn = false;
     lastSwitchTimestamp = millis();
+}
+
+void Controller::setTemperature(float temp)
+{
+    temperature = temp;
+
+    // Add the new temperature to the buffer
+    temperatureBuffer.push_back(temp);
+
+    // Ensure the buffer does not exceed the maximum size
+    if (temperatureBuffer.size() > maxBufferSize)
+    {
+        temperatureBuffer.pop_front();
+    }
+}
+
+float Controller::calculateMovingAverage()
+{
+    if (temperatureBuffer.empty())
+    {
+        return temperature; // Default to the current temperature if buffer is empty
+    }
+
+    float sum = 0;
+    for (float temp : temperatureBuffer)
+    {
+        sum += temp;
+    }
+    return sum / temperatureBuffer.size();
 }

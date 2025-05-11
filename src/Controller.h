@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <vector>
+#include <deque>
 
 enum Mode
 {
@@ -25,12 +26,12 @@ public:
     bool shouldTurnOnSource(unsigned long currentTimestamp);
     void updateSource(unsigned long currentTimestamp);
     void update(const String &mode, const String &status, const String &temperaturePeriods);
+    void setTemperature(float temp);
 
     inline float getTemperature() const { return temperature; }
     inline Mode getMode() const { return mode; }
     inline Status getStatus() const { return status; }
     inline const std::vector<std::pair<unsigned long, float>> &getTemperaturePeriods() const { return temperaturePeriods; }
-    inline void setTemperature(float temp) { temperature = temp; }
     inline const char *getApiKey() { return apiKey; };
     inline const int getControllerId() { return controllerId; };
 
@@ -53,6 +54,12 @@ private:
     Status stringToStatus(const String &statusStr);
     void turnOnSource();
     void turnOffSource();
+
+    std::deque<float> temperatureBuffer; // Buffer to store recent temperature readings
+    const size_t maxBufferSize = 5; // Maximum size of the buffer for moving average
+
+    /** Calculates the moving average of the temperature readings */
+    float calculateMovingAverage();
 };
 
 #endif // CONTROLLER_H
