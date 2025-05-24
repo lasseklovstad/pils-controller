@@ -1,6 +1,5 @@
 #include "Controller.h"
 #include <logging.h>
-#include <LittleFS.h>
 
 Controller::Controller(const int controllerId, const char *apiKey, const int relayOutput) : mode(Mode::NONE), status(Status::INACTIVE), controllerId(controllerId), apiKey(apiKey), temperature(-127), relayOutput(relayOutput), isSourceOn(false), lastSwitchTimestamp(0), minSwitchDelay(30000), targetTemperature(14)
 {
