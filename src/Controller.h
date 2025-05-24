@@ -27,6 +27,8 @@ public:
     void update(const String &mode, const String &status, const String &temperaturePeriods, const String &minDelay, const String &avgBufferSize, const String &hysteresis);
     void setTemperature(float temp);
     void reset();
+    void saveStateToFile();
+    void loadStateFromFile();
 
     inline float getTemperature() const { return temperature; }
     inline Mode getMode() const { return mode; }
@@ -44,6 +46,7 @@ private:
     Status status;
     std::vector<std::pair<unsigned long, float>> temperaturePeriods;
     float temperature;
+    float targetTemperature;
     const int controllerId;
     const char *apiKey;
     const int relayOutput;
