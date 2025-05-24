@@ -23,6 +23,7 @@ public:
     void end() {}
     bool format() { return false; }
     File open(const char*, const char*) { return File(); }
+    File open(const String&, const char*) { return File(); }
     // Add more dummy methods as needed for compilation
 };
 static LittleFSClass LittleFS;
