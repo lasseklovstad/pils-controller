@@ -5,7 +5,6 @@
 Controller::Controller(const int controllerId, const char *apiKey, const int relayOutput) : mode(Mode::NONE), status(Status::INACTIVE), controllerId(controllerId), apiKey(apiKey), temperature(-127), relayOutput(relayOutput), isSourceOn(false), lastSwitchTimestamp(0), minSwitchDelay(30000), targetTemperature(14)
 {
     parseTemperaturePeriods("");
-    loadStateFromFile();
 }
 
 void Controller::update(const String &mode, const String &status, const String &temperaturePeriods, const String &minDelayInSec, const String &avgBufferSize, const String &hysteresis)
