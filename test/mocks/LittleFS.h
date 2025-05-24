@@ -11,6 +11,7 @@ public:
     bool available() { return false; }
     void close() {}
     void printf(const char*, ...) { }
+    void printf(const String&, ...) { }
     String readStringUntil(char) { return String(""); }
 private:
     bool _open;
