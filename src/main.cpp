@@ -49,11 +49,11 @@ void loop()
     scanAndConnect(WIFI_SSIDS, WIFI_PASSWORDS, numNetworks);
     if (WiFi.status() != WL_CONNECTED)
     {
-      LOG_DEBUG("Could not connect to internet, trying again later...")
+      LOG_DEBUG("Could not connect to internet, trying again later...");
     }
     else
     {
-      LOG_DEBUG("Connected to internet. Starting time and https config.")
+      LOG_DEBUG("Connected to internet. Starting time and https config.");
       delay(10);
       configureTime();
       delay(10);
