@@ -1,7 +1,7 @@
 #include "Controller.h"
 #include <logging.h>
 
-Controller::Controller(const int controllerId, const char *apiKey, const int relayOutput) : mode(Mode::NONE), status(Status::INACTIVE), controllerId(controllerId), apiKey(apiKey), temperature(-127), relayOutput(relayOutput), isSourceOn(false), lastSwitchTimestamp(0), minSwitchDelay(30000) // Default to 30 seconds
+Controller::Controller(const int controllerId, const char *apiKey, const int relayOutput) : mode(Mode::NONE), status(Status::INACTIVE), controllerId(controllerId), apiKey(apiKey), temperature(-127), relayOutput(relayOutput), isSourceOn(false), lastSwitchTimestamp(0), minSwitchDelay(30000), targetTemperature(14)
 {
     parseTemperaturePeriods("");
 }
@@ -108,7 +108,7 @@ float Controller::getTargetTemperature(unsigned long currentTimestamp)
 {
     if (temperaturePeriods.size() < 1)
     {
-        return 18.0;
+        return targetTemperature;
     }
 
     if (status == Status::PREPARE || currentTimestamp <= temperaturePeriods[0].first)
@@ -134,7 +134,7 @@ void Controller::updateSource(unsigned long currentTimestamp)
         return;
     }
 
-    float targetTemperature = getTargetTemperature(currentTimestamp);
+    targetTemperature = getTargetTemperature(currentTimestamp);
     float averageTemperature = calculateMovingAverage();
     LOG_DEBUG("Target temperature: " + String(targetTemperature));
     LOG_DEBUG("Average temperature: " + String(averageTemperature));
@@ -156,7 +156,7 @@ void Controller::updateSource(unsigned long currentTimestamp)
         {
             turnOnSource();
         }
-        else if(isSourceOn && averageTemperature >= (targetTemperature + hysteresis))
+        else if (isSourceOn && averageTemperature >= (targetTemperature + hysteresis))
         {
             turnOffSource();
         }
@@ -235,4 +235,55 @@ void Controller::reset()
     temperatureBuffer.clear();
     maxBufferSize = 5; // Reset to default buffer size
     hysteresis = 0;    // Reset to default hysteresis
+    targetTemperature = 14;
+}
+
+void Controller::saveStateToFile()
+{
+    if (!LittleFS.begin())
+    {
+        LOG_ERROR("Failed to mount LittleFS");
+        return;
+    }
+    String filename = "/controller_state_" + String(controllerId) + ".txt";
+    File file = LittleFS.open(filename, "w");
+    if (!file)
+    {
+        LOG_ERROR("Failed to open state file for writing");
+        return;
+    }
+    file.printf("%d\n%d\n%f\n", (int)status, (int)mode, targetTemperature);
+    file.close();
+    LOG_DEBUG("Controller state saved to: " + filename);
+}
+
+void Controller::loadStateFromFile()
+{
+    if (!LittleFS.begin())
+    {
+        LOG_ERROR("Failed to mount LittleFS");
+        return;
+    }
+    String filename = "/controller_state_" + String(controllerId) + ".txt";
+    File file = LittleFS.open(filename, "r");
+    if (!file)
+    {
+        LOG_DEBUG("No state file found, using defaults");
+        return;
+    }
+    int s, m;
+    float t;
+    if (file.available())
+    {
+        s = file.readStringUntil('\n').toInt();
+        m = file.readStringUntil('\n').toInt();
+        t = file.readStringUntil('\n').toFloat();
+        status = (Status)s;
+        mode = (Mode)m;
+        targetTemperature = t;
+
+        LOG_DEBUG("Controller state loaded from: " + filename);
+        LOG_DEBUG("Status: " + String(s) + ", Mode: " + String(m) + ", Target temp: " + String(t));
+    }
+    file.close();
 }
