@@ -238,41 +238,52 @@ void Controller::reset()
     targetTemperature = 14;
 }
 
-void Controller::saveStateToFile() {
-    if (!LittleFS.begin()) {
+void Controller::saveStateToFile()
+{
+    if (!LittleFS.begin())
+    {
         LOG_ERROR("Failed to mount LittleFS");
         return;
     }
     String filename = "/controller_state_" + String(controllerId) + ".txt";
     File file = LittleFS.open(filename, "w");
-    if (!file) {
+    if (!file)
+    {
         LOG_ERROR("Failed to open state file for writing");
         return;
     }
     file.printf("%d\n%d\n%f\n", (int)status, (int)mode, targetTemperature);
     file.close();
+    LOG_DEBUG("Controller state saved to: " + filename);
 }
 
-void Controller::loadStateFromFile() {
-    if (!LittleFS.begin()) {
+void Controller::loadStateFromFile()
+{
+    if (!LittleFS.begin())
+    {
         LOG_ERROR("Failed to mount LittleFS");
         return;
     }
     String filename = "/controller_state_" + String(controllerId) + ".txt";
     File file = LittleFS.open(filename, "r");
-    if (!file) {
+    if (!file)
+    {
         LOG_DEBUG("No state file found, using defaults");
         return;
     }
     int s, m;
     float t;
-    if (file.available()) {
+    if (file.available())
+    {
         s = file.readStringUntil('\n').toInt();
         m = file.readStringUntil('\n').toInt();
         t = file.readStringUntil('\n').toFloat();
         status = (Status)s;
         mode = (Mode)m;
         targetTemperature = t;
+
+        LOG_DEBUG("Controller state loaded from: " + filename);
+        LOG_DEBUG("Status: " + String(s) + ", Mode: " + String(m) + ", Target temp: " + String(t));
     }
     file.close();
 }

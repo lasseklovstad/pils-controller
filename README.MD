@@ -16,3 +16,6 @@ This file must then be uploaded to the esp32. WIth the command: `Upload Filesyst
 6. Kjør tester med `pio test -e native`
 
 Vi bruker https://github.com/eranpeer/FakeIt/wiki/Quickstart
+
+## Opplastning
+Hold inne knappen til høyre når du holder usben mot deg.
